@@ -63,9 +63,8 @@ class LinuxKernelCryptoAPI(unittest.TestCase):
     def test_hash_crc64(self):
         # Try crc64-rocksoft first (modern kernels), fall back to crc64
         data = b"abcdefghijklmnopqrstuvwxyz" * 1024 * 1024
-        algo_name = "crc64-rocksoft"
         try:
-            with self.create_alg("hash", algo_name) as algo:
+            with self.create_alg("hash", "crc64-rocksoft") as algo:
                 op, _ = algo.accept()
                 with op:
                     op.send(data, socket.MSG_MORE)
@@ -546,9 +545,9 @@ def list_available_algorithms():
 
     for algo_type in sorted(algorithms.keys()):
         af_alg_type = type_mapping.get(algo_type, algo_type)
-        print(f"{algo_type} (AF_ALG type: {af_alg_type}):")
+        print("{} (AF_ALG type: {}):".format(algo_type, af_alg_type))
         for name in sorted(algorithms[algo_type]):
-            print(f"  - {name}")
+            print("  - {}".format(name))
         print("")
 
 
