@@ -11,7 +11,7 @@ def parse_proc_crypto():
     """Parse /proc/crypto and return available algorithms by type"""
     algorithms = {}
     current = {}
-    
+
     try:
         with open('/proc/crypto', 'r') as f:
             for line in f:
@@ -21,8 +21,9 @@ def parse_proc_crypto():
                         name = current['name']
                         algo_type = current['type']
                         internal = current.get('internal', 'no')
-                        
-                        # Skip internal algorithms and algorithms starting with __
+
+                        # Skip internal algorithms and
+                        # algorithms starting with __
                         if internal == 'no' and not name.startswith('__'):
                             if algo_type not in algorithms:
                                 algorithms[algo_type] = []
@@ -37,7 +38,7 @@ def parse_proc_crypto():
     except FileNotFoundError:
         print("Warning: /proc/crypto not found")
         return {}
-    
+
     return algorithms
 
 
@@ -298,7 +299,9 @@ class LinuxKernelCryptoAPI(unittest.TestCase):
             algo.setsockopt(socket.SOL_ALG, socket.ALG_SET_KEY, key)
             op, _ = algo.accept()
             with op:
-                op.sendmsg_afalg(op=socket.ALG_OP_ENCRYPT, flags=socket.MSG_MORE)
+                op.sendmsg_afalg(
+                    op=socket.ALG_OP_ENCRYPT, flags=socket.MSG_MORE
+                )
                 op.sendall(msg)
                 enc = op.recv(msglen)
                 self.assertEqual(len(enc), msglen)
@@ -493,7 +496,11 @@ class LinuxKernelCryptoAPI(unittest.TestCase):
                 )
                 res = op.recv(len(msg) - taglen)
                 self.assertEqual(plain, res[assoclen:])
-                print("aead rfc4106(gcm(aes)): {}".format(res[assoclen:].hex()))
+                print(
+                    "aead rfc4106(gcm(aes)): {}".format(
+                        res[assoclen:].hex()
+                    )
+                )
 
     def test_rng_stdrng(self):
         with self.create_alg("rng", "stdrng") as algo:
@@ -520,13 +527,13 @@ class LinuxKernelCryptoAPI(unittest.TestCase):
 def list_available_algorithms():
     """List all available crypto algorithms from /proc/crypto"""
     algorithms = parse_proc_crypto()
-    
+
     if not algorithms:
         print("No algorithms found in /proc/crypto")
         return
-    
+
     print("Available crypto algorithms in /proc/crypto:\n")
-    
+
     # Map types to AF_ALG types
     type_mapping = {
         'shash': 'hash',
@@ -536,13 +543,13 @@ def list_available_algorithms():
         'rng': 'rng',
         'compression': 'compression'
     }
-    
+
     for algo_type in sorted(algorithms.keys()):
         af_alg_type = type_mapping.get(algo_type, algo_type)
         print(f"{algo_type} (AF_ALG type: {af_alg_type}):")
         for name in sorted(algorithms[algo_type]):
             print(f"  - {name}")
-        print()
+        print("")
 
 
 def main():
